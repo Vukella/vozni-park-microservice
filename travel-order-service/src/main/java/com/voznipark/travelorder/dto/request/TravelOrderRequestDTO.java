@@ -2,6 +2,7 @@ package com.voznipark.travelorder.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -30,4 +31,8 @@ public class TravelOrderRequestDTO {
     private Integer locationId;
 
     private Long createdByUserId;
+
+    @NotNull(message = "startingMileage is required")
+    @PositiveOrZero(message = "startingMileage must not be negative")
+    private Integer startingMileage;
 }

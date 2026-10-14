@@ -20,6 +20,7 @@ public class TravelOrderMapper {
         entity.setWorkOrderNumber(dto.getWorkOrderNumber());
         entity.setLocationId(dto.getLocationId());
         entity.setCreatedByUserId(dto.getCreatedByUserId());
+        entity.setStartingMileage(dto.getStartingMileage());
         return entity;
     }
 

@@ -106,7 +106,11 @@ public class TravelOrderService {
         Integer startingMileage = travelOrder.getStartingMileage();
         Integer endingMileage = dto.endingMileage();
 
-        if (startingMileage != null && endingMileage <= startingMileage) {
+        if (startingMileage == null) {
+            throw new IllegalStateException(
+                    "Travel order " + id + " has no startingMileage; it may have been created before T1 fix.");
+        }
+        if (endingMileage <= startingMileage) {
             throw new IllegalArgumentException(
                     "endingMileage (" + endingMileage + ") must be greater than "
                             + "startingMileage (" + startingMileage + ")");
@@ -129,7 +133,7 @@ public class TravelOrderService {
                 : null;
 
         // distanceKm computed here so consumers don't need to recalculate
-        Integer distanceKm = endingMileage - (startingMileage != null ? startingMileage : 0);
+        Integer distanceKm = endingMileage - startingMileage;
 
         TravelOrderCompletedEvent event = TravelOrderCompletedEvent.builder()
                 .travelOrderId(saved.getIdTravelOrder())
@@ -163,6 +167,12 @@ public class TravelOrderService {
         TravelOrder travelOrder = travelOrderRepository.findById(travelOrderId)
                 .orElseThrow(() -> new EntityNotFoundException("TravelOrder", travelOrderId));
 
+        if (!"PENDING".equals(travelOrder.getStatus())) {
+            log.warn("confirmTravelOrder skipped — order {} already in status {}",
+                    travelOrderId, travelOrder.getStatus());
+            return;
+        }
+
         travelOrder.setStatus("CONFIRMED");
         travelOrder.setSagaStatus("RESOURCES_RESERVED");
         travelOrderRepository.save(travelOrder);
@@ -179,6 +189,12 @@ public class TravelOrderService {
         TravelOrder travelOrder = travelOrderRepository.findById(travelOrderId)
                 .orElseThrow(() -> new EntityNotFoundException("TravelOrder", travelOrderId));
 
+        if (!"PENDING".equals(travelOrder.getStatus())) {
+            log.warn("failTravelOrder skipped — order {} already in status {}",
+                    travelOrderId, travelOrder.getStatus());
+            return;
+        }
+
         travelOrder.setStatus("FAILED");
         travelOrder.setSagaStatus("FAILED");
         travelOrder.setFailureReason(reason);
@@ -194,8 +210,12 @@ public class TravelOrderService {
     @Transactional
     public void markVehicleReserved(Long travelOrderId, Integer vehicleSapNumber) {
         travelOrderRepository.findById(travelOrderId).ifPresent(order -> {
-            order.setSagaStatus("VEHICLE_RESERVED");
-            order.setVehicleSapNumber(vehicleSapNumber);
+            if (order.getVehicleSapNumber() == null) {
+                order.setVehicleSapNumber(vehicleSapNumber);
+            }
+            if ("INITIATED".equals(order.getSagaStatus())) {
+                order.setSagaStatus("VEHICLE_RESERVED");
+            }
             travelOrderRepository.save(order);
         });
     }
