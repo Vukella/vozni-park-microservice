@@ -1,0 +1,26 @@
+# Build output
+target/
+*.class
+
+# IntelliJ
+.idea/
+*.iml
+
+# Secrets
+.env
+.env.*
+.env.example
+
+# Logs
+logs/
+*.log
+
+# Clojure
+.clj-kondo
+
+# Separate repos and non-thesis projects
+vozni-park-backend/
+vozni-park-frontend/
+vozni-park-registration-service/
+vozni-park-benchmark/
+Dokumentacija/

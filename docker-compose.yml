@@ -1,0 +1,388 @@
+services:
+
+  # ─────────────────────────────────────────
+  # MySQL 8.0 Database
+  # ─────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    command: --log_bin_trust_function_creators=1
+    container_name: vozni-park-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_NAME:-vozni_park_db}
+      MYSQL_USER: ${DB_USERNAME:-vozni_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-vozni_pass}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql:ro
+    networks:
+      - vozni-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ─────────────────────────────────────────
+  # Apache Kafka 3.7.1 — KRaft mode (no ZooKeeper)
+  # Port 9092 → internal Docker communication (service-to-service)
+  # Port 9094 → external host access (IntelliJ / local dev outside Docker)
+  # ─────────────────────────────────────────
+  kafka:
+    image: apache/kafka:3.7.1
+    container_name: vozni-park-kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,EXTERNAL://0.0.0.0:9094,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - vozni-network
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # ─────────────────────────────────────────
+  # Kafka UI — browser
+  # http://localhost:8090
+  # ─────────────────────────────────────────
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: vozni-park-kafka-ui
+    restart: unless-stopped
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: vozni-park
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - vozni-network
+
+  # ─────────────────────────────────────────
+  # Spring Boot Backend (monolith)
+  # ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./vozni-park-backend
+      dockerfile: Dockerfile
+    container_name: vozni-park-backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-vozni_park_db}
+      DB_USERNAME: ${DB_USERNAME:-vozni_user}
+      DB_PASSWORD: ${DB_PASSWORD:-vozni_pass}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      SPRING_PROFILES_ACTIVE: docker
+      MAIL_HOST: sandbox.smtp.mailtrap.io
+      MAIL_PORT: 2525
+      MAIL_USERNAME: ${MAIL_USER}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      OTP_EXPIRY_MINUTES: 10
+      FRONTEND_URL: http://localhost
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - vozni-network
+
+  # ─────────────────────────────────────────
+  # React Frontend (served via Nginx)
+  # ─────────────────────────────────────────
+  frontend:
+    build:
+      context: ./vozni-park-frontend
+      dockerfile: Dockerfile
+    container_name: vozni-park-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - vozni-network
+
+  # ─────────────────────────────────────────
+  # Clojure Registration Service
+  # ─────────────────────────────────────────
+  registration-service:
+    build:
+      context: ./vozni-park-registration-service
+      dockerfile: Dockerfile
+    container_name: vozni-park-registration-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-vozni_park_db}
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MAIL_HOST: sandbox.smtp.mailtrap.io
+      MAIL_PORT: 2525
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      FRONTEND_URL: http://localhost
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - vozni-network
+
+  # ─────────────────────────────────────────
+  # fleet-service (port 8083)
+  # ─────────────────────────────────────────
+  fleet-service:
+    build:
+      context: ./vozni-park-fleet-service
+      dockerfile: Dockerfile
+    container_name: vozni-park-fleet-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: fleet_service_db
+      DB_USERNAME: ${DB_USERNAME:-vozni_user}
+      DB_PASSWORD: ${DB_PASSWORD:-vozni_pass}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8083:8083"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - vozni-network
+
+
+  # ─────────────────────────────────────────
+  # travel-order-service (port 8084)
+  # ─────────────────────────────────────────
+  travel-order-service:
+    build:
+      context: ./travel-order-service
+      dockerfile: Dockerfile
+    container_name: vozni-park-travel-order-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: travel_order_service_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/travel_order_service_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-vozni_user}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-vozni_pass}
+      DB_USERNAME: ${DB_USERNAME:-vozni_user}
+      DB_PASSWORD: ${DB_PASSWORD:-vozni_pass}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8084:8084"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      fleet-service:
+        condition: service_started
+    networks:
+      - vozni-network
+
+  # ─────────────────────────────────────────
+  # notification-service (port 8085)
+  # ─────────────────────────────────────────
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: vozni-park-notification-service
+    restart: unless-stopped
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_PROFILES_ACTIVE: docker
+      MAIL_HOST: sandbox.smtp.mailtrap.io
+      MAIL_PORT: 2525
+      MAIL_USERNAME: ${MAIL_USER}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+    ports:
+      - "8085:8085"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - vozni-network
+
+  # ─────────────────────────────────────────
+  # technical-maintenance-service (port 8087)
+  # ─────────────────────────────────────────
+  technical-maintenance-service:
+    build:
+      context: ./maintenance-service
+      dockerfile: Dockerfile
+    container_name: vozni-park-technical-maintenance-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: technical_maintenance_service_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/technical_maintenance_service_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-vozni_user}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-vozni_pass}
+      DB_USERNAME: ${DB_USERNAME:-vozni_user}
+      DB_PASSWORD: ${DB_PASSWORD:-vozni_pass}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8087:8087"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - vozni-network
+
+  # ─────────────────────────────────────────
+  # document-reporting-service (port 8088)
+  # ─────────────────────────────────────────
+  document-reporting-service:
+    build:
+      context: ./document-reporting-service
+      dockerfile: Dockerfile
+    container_name: vozni-park-document-reporting-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: document_reporting_service_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/document_reporting_service_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-vozni_user}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-vozni_pass}
+      DB_USERNAME: ${DB_USERNAME:-vozni_user}
+      DB_PASSWORD: ${DB_PASSWORD:-vozni_pass}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_PROFILES_ACTIVE: docker
+      FLEET_SERVICE_URL: http://fleet-service:8083
+    ports:
+      - "8088:8088"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      fleet-service:
+        condition: service_started
+    networks:
+      - vozni-network
+
+  # ─────────────────────────────────────────
+  # fuel-tracking-service (port 8089)
+  # ─────────────────────────────────────────
+  fuel-tracking-service:
+    build:
+      context: ./fuel-tracking-service
+      dockerfile: Dockerfile
+    container_name: vozni-park-fuel-tracking-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: fuel_tracking_service_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/fuel_tracking_service_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-vozni_user}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-vozni_pass}
+      DB_USERNAME: ${DB_USERNAME:-vozni_user}
+      DB_PASSWORD: ${DB_PASSWORD:-vozni_pass}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8089:8089"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - vozni-network
+
+  # ─────────────────────────────────────────
+  # phpMyAdmin
+  # ─────────────────────────────────────────
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: vozni-park-phpmyadmin
+    ports:
+      - "8082:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    depends_on:
+      - mysql
+    networks:
+      - vozni-network
+
+  # ─────────────────────────────────────────
+  # SonarQube (only starts with --profile sonar)
+  # ─────────────────────────────────────────
+  sonarqube:
+    image: sonarqube:lts-community
+    profiles:
+      - sonar
+    container_name: vozni-park-sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_FORCEAUTHENTICATION: "false"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - vozni-network
+
+# ─────────────────────────────────────────
+# Volumes & Networks
+# ─────────────────────────────────────────
+volumes:
+  mysql_data:
+    name: vozni-park-mysql-data
+  kafka_data:
+    name: vozni-park-kafka-data
+  sonarqube_data:
+  sonarqube_logs:
+
+networks:
+  vozni-network:
+    name: vozni-park-network
+    driver: bridge

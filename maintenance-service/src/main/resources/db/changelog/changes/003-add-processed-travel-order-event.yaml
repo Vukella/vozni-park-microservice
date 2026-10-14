@@ -1,0 +1,46 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# INSTRUCTIONS: rename this file so its number follows your last migration.
+# Example: if your latest file is 004-something.yaml, name this 005-dedup.yaml.
+# Set the id below to match (e.g. "005") and set author to your name.
+# ─────────────────────────────────────────────────────────────────────────────
+databaseChangeLog:
+  - changeSet:
+      id: "003-add-processed-travel-order-event"   # replace XXX with next number
+      author: vukelicn
+      comment: >
+        Adds a deduplication table for TravelOrderCompleted events consumed by
+        technical-maintenance-service. The UNIQUE constraint on travel_order_id
+        guarantees that each travel order is processed exactly once, regardless
+        of how the duplicate arrives (immediate re-delivery, arbitrary replay,
+        or out-of-order delivery). Replaces the lastTravelOrderId field approach
+        on VehicleMileageTracker, which only protected against the immediate
+        preceding duplicate.
+
+      changes:
+        - createTable:
+            tableName: processed_travel_order_event
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: travel_order_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: processed_at
+                  type: DATETIME(6)
+                  constraints:
+                    nullable: false
+
+        - addUniqueConstraint:
+            tableName: processed_travel_order_event
+            columnNames: travel_order_id
+            constraintName: uk_processed_travel_order_event_travel_order_id

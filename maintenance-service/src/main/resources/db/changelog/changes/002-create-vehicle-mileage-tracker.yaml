@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-vehicle-mileage-tracker
+      author: nemanja.vukelic
+      changes:
+        - createTable:
+            tableName: vehicle_mileage_tracker
+            columns:
+              - column:
+                  name: vehicle_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: vehicle_sap_number
+                  type: INT
+              - column:
+                  name: total_mileage_km
+                  type: INT
+                  constraints:
+                    nullable: false
+                  defaultValueNumeric: 0
+              - column:
+                  name: km_since_last_minor_service
+                  type: INT
+                  constraints:
+                    nullable: false
+                  defaultValueNumeric: 0
+              - column:
+                  name: km_since_last_major_service
+                  type: INT
+                  constraints:
+                    nullable: false
+                  defaultValueNumeric: 0
+              - column:
+                  name: last_travel_order_id
+                  type: BIGINT
+              - column:
+                  name: last_updated
+                  type: DATETIME

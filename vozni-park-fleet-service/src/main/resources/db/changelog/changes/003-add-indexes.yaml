@@ -1,0 +1,196 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: 201-indexes-vehicle-fault
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          indexExists:
+            indexName: idx_vehicle_fault_vehicle_id
+      changes:
+        - createIndex:
+            tableName: vehicle_fault
+            indexName: idx_vehicle_fault_vehicle_id
+            columns:
+              - column:
+                  name: vehicle_id
+        - createIndex:
+            tableName: vehicle_fault
+            indexName: idx_vehicle_fault_inoperable
+            columns:
+              - column:
+                  name: vehicle_inoperable
+        - createIndex:
+            tableName: vehicle_fault
+            indexName: idx_vehicle_fault_resolution_date
+            columns:
+              - column:
+                  name: resolution_date
+
+  - changeSet:
+      id: 202-indexes-license-revocation
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          indexExists:
+            indexName: idx_license_revocation_driver_id
+      changes:
+        - createIndex:
+            tableName: license_revocation
+            indexName: idx_license_revocation_driver_id
+            columns:
+              - column:
+                  name: driver_id
+        - createIndex:
+            tableName: license_revocation
+            indexName: idx_license_revocation_restoration_date
+            columns:
+              - column:
+                  name: restoration_date
+
+  - changeSet:
+      id: 203-indexes-vehicle-document
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          indexExists:
+            indexName: idx_vehicle_document_vehicle_id
+      changes:
+        - createIndex:
+            tableName: vehicle_document
+            indexName: idx_vehicle_document_vehicle_id
+            columns:
+              - column:
+                  name: vehicle_id
+        - createIndex:
+            tableName: vehicle_document
+            indexName: idx_vehicle_document_type
+            columns:
+              - column:
+                  name: document_type
+
+  - changeSet:
+      id: 204-indexes-vehicle
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          indexExists:
+            indexName: idx_vehicle_sap_number
+      changes:
+        - createIndex:
+            tableName: vehicle
+            indexName: idx_vehicle_sap_number
+            columns:
+              - column:
+                  name: sap_number
+        - createIndex:
+            tableName: vehicle
+            indexName: idx_vehicle_status_code
+            columns:
+              - column:
+                  name: status_code
+        - createIndex:
+            tableName: vehicle
+            indexName: idx_vehicle_decommissioned
+            columns:
+              - column:
+                  name: decommissioned
+
+  - changeSet:
+      id: 205-indexes-driver
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          indexExists:
+            indexName: idx_driver_status_code
+      changes:
+        - createIndex:
+            tableName: driver
+            indexName: idx_driver_status_code
+            columns:
+              - column:
+                  name: status_code
+
+  - changeSet:
+      id: 206-indexes-document-expiry
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          indexExists:
+            indexName: idx_registration_date_to
+      changes:
+        - createIndex:
+            tableName: registration
+            indexName: idx_registration_date_to
+            columns:
+              - column:
+                  name: date_to
+        - createIndex:
+            tableName: casco_insurance
+            indexName: idx_casco_insurance_date_to
+            columns:
+              - column:
+                  name: date_to
+        - createIndex:
+            tableName: tachograph_device
+            indexName: idx_tachograph_device_date_to
+            columns:
+              - column:
+                  name: date_to
+        - createIndex:
+            tableName: fire_extinguisher
+            indexName: idx_fire_extinguisher_date_to
+            columns:
+              - column:
+                  name: date_to
+        - createIndex:
+            tableName: first_aid_kit
+            indexName: idx_first_aid_kit_expiry_date
+            columns:
+              - column:
+                  name: expiry_date
+        - createIndex:
+            tableName: medical_certificate
+            indexName: idx_medical_certificate_date_to
+            columns:
+              - column:
+                  name: date_to
+        - createIndex:
+            tableName: driver_permit
+            indexName: idx_driver_permit_date_to
+            columns:
+              - column:
+                  name: date_to
+        - createIndex:
+            tableName: tachograph_card
+            indexName: idx_tachograph_card_date_to
+            columns:
+              - column:
+                  name: date_to
+        - createIndex:
+            tableName: drivers_license
+            indexName: idx_drivers_license_date_to
+            columns:
+              - column:
+                  name: date_to
+
+  - changeSet:
+      id: 207-unique-driver-license-assignment
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          uniqueConstraintExists:
+            tableName: driver_license_assignment
+            constraintName: uq_driver_license_assignment
+      changes:
+        - addUniqueConstraint:
+            tableName: driver_license_assignment
+            columnNames: driver_id, drivers_license_id, license_category
+            constraintName: uq_driver_license_assignment

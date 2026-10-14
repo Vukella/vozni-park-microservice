@@ -1,0 +1,67 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-fuel-record
+      author: nemanja
+      changes:
+        - createTable:
+            tableName: fuel_record
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: travel_order_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: travel_order_number
+                  type: VARCHAR(100)
+              - column:
+                  name: vehicle_id
+                  type: BIGINT
+              - column:
+                  name: vehicle_sap_number
+                  type: INT
+              - column:
+                  name: distance_km
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: fuel_consumed_liters
+                  type: DECIMAL(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price_per_liter
+                  type: DECIMAL(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: total_fuel_cost
+                  type: DECIMAL(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: recorded_at
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: fuel_record
+            indexName: idx_fuel_record_travel_order
+            columns:
+              - column:
+                  name: travel_order_id
+        - createIndex:
+            tableName: fuel_record
+            indexName: idx_fuel_record_vehicle
+            columns:
+              - column:
+                  name: vehicle_id

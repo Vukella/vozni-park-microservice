@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - include:
+      file: changes/001-create-tables.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/002-add-foreign-keys.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/003-add-indexes.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/004-seed-data.yaml
+      relativeToChangelogFile: true

@@ -1,0 +1,65 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-report-record
+      author: voznipark
+      changes:
+        - createTable:
+            tableName: report_record
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: report_type
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  # PK of source entity in its own service (travelOrderId or accidentId)
+                  # No FK — cross-service reference
+                  name: source_entity_id
+                  type: BIGINT
+              - column:
+                  # Human-readable: travel order number or ACCIDENT-{id}
+                  name: source_reference
+                  type: VARCHAR(100)
+              - column:
+                  name: vehicle_sap_number
+                  type: INT
+              - column:
+                  name: generated_at
+                  type: DATETIME
+              - column:
+                  name: file_name
+                  type: VARCHAR(255)
+              - column:
+                  name: content_type
+                  type: VARCHAR(100)
+                  defaultValue: 'application/pdf'
+              - column:
+                  name: file_size
+                  type: BIGINT
+              - column:
+                  # PDF binary stored directly in DB (BLOB-in-DB strategy)
+                  name: report_content
+                  type: LONGBLOB
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: idx_report_record_type
+            tableName: report_record
+            columns:
+              - column:
+                  name: report_type
+        - createIndex:
+            indexName: idx_report_record_source
+            tableName: report_record
+            columns:
+              - column:
+                  name: source_entity_id
+              - column:
+                  name: report_type

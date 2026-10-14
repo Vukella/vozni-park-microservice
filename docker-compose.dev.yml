@@ -1,0 +1,39 @@
+
+# Development overrides — use with:
+#   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+services:
+
+  mysql:
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-vozni_park_db}
+
+  backend:
+    build:
+      context: ./vozni-park-backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./vozni-park-backend:/app
+      - maven_cache:/root/.m2
+    environment:
+      SPRING_PROFILES_ACTIVE: dev,docker
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+    ports:
+      - "8080:8080"
+      - "5005:5005"
+
+  frontend:
+    build:
+      context: ./vozni-park-frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./vozni-park-frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_TARGET=http://backend:8080
+    ports:
+      - "5173:5173"
+
+volumes:
+  maven_cache:
+    name: vozni-park-maven-cache

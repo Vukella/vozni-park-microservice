@@ -1,0 +1,59 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: 301-seed-vehicle-types
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          sqlCheck:
+            expectedResult: "1"
+            sql: "SELECT COUNT(*) FROM vehicle_type WHERE name = 'Passenger Vehicle'"
+      changes:
+        - insert:
+            tableName: vehicle_type
+            columns:
+              - column:
+                  name: name
+                  value: "Passenger Vehicle"
+        - insert:
+            tableName: vehicle_type
+            columns:
+              - column:
+                  name: name
+                  value: "Van"
+        - insert:
+            tableName: vehicle_type
+            columns:
+              - column:
+                  name: name
+                  value: "Truck"
+        - insert:
+            tableName: vehicle_type
+            columns:
+              - column:
+                  name: name
+                  value: "Utility Vehicle"
+
+  - changeSet:
+      id: 302-seed-system-refresh
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          sqlCheck:
+            expectedResult: "1"
+            sql: "SELECT COUNT(*) FROM system_refresh WHERE key_name = 'STATUS_REFRESH'"
+      changes:
+        - insert:
+            tableName: system_refresh
+            columns:
+              - column:
+                  name: key_name
+                  value: "STATUS_REFRESH"
+              - column:
+                  name: last_run_status
+                  value: "OK"
+              - column:
+                  name: last_run_message
+                  value: "Initial record — no run yet"

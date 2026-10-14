@@ -1,0 +1,399 @@
+databaseChangeLog:
+
+  # 101-103: REFERENCE / LOOKUP RELATIONSHIPS
+  - changeSet:
+      id: 101-fk-vehicle-model-brand
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_vehicle_model_brand
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_model
+            baseColumnNames: brand_id
+            constraintName: fk_vehicle_model_brand
+            referencedTableName: brand
+            referencedColumnNames: id_brand
+
+  - changeSet:
+      id: 102-fk-vehicle-subtype-vehicle-type
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_vehicle_subtype_vehicle_type
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_subtype
+            baseColumnNames: vehicle_type_id
+            constraintName: fk_vehicle_subtype_vehicle_type
+            referencedTableName: vehicle_type
+            referencedColumnNames: id_vehicle_type
+
+  - changeSet:
+      id: 103-fk-location-unit-parent
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_location_unit_parent
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: location_unit
+            baseColumnNames: parent_id
+            constraintName: fk_location_unit_parent
+            referencedTableName: location_unit
+            referencedColumnNames: id_location_unit
+
+  # 104: VEHICLE — ALL FK COLUMNS
+  - changeSet:
+      id: 104-fk-vehicle-relations
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_vehicle_fuel_type
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: vehicle
+            baseColumnNames: fuel_type_id
+            constraintName: fk_vehicle_fuel_type
+            referencedTableName: fuel_type
+            referencedColumnNames: id_fuel_type
+        - addForeignKeyConstraint:
+            baseTableName: vehicle
+            baseColumnNames: registration_id
+            constraintName: fk_vehicle_registration
+            referencedTableName: registration
+            referencedColumnNames: id_registration
+        - addForeignKeyConstraint:
+            baseTableName: vehicle
+            baseColumnNames: first_aid_kit_id
+            constraintName: fk_vehicle_first_aid_kit
+            referencedTableName: first_aid_kit
+            referencedColumnNames: id_first_aid_kit
+        - addForeignKeyConstraint:
+            baseTableName: vehicle
+            baseColumnNames: vehicle_model_id
+            constraintName: fk_vehicle_vehicle_model
+            referencedTableName: vehicle_model
+            referencedColumnNames: id_vehicle_model
+        - addForeignKeyConstraint:
+            baseTableName: vehicle
+            baseColumnNames: vehicle_type_id
+            constraintName: fk_vehicle_vehicle_type
+            referencedTableName: vehicle_type
+            referencedColumnNames: id_vehicle_type
+        - addForeignKeyConstraint:
+            baseTableName: vehicle
+            baseColumnNames: vehicle_subtype_id
+            constraintName: fk_vehicle_vehicle_subtype
+            referencedTableName: vehicle_subtype
+            referencedColumnNames: id_vehicle_subtype
+        - addForeignKeyConstraint:
+            baseTableName: vehicle
+            baseColumnNames: tachograph_device_id
+            constraintName: fk_vehicle_tachograph_device
+            referencedTableName: tachograph_device
+            referencedColumnNames: id_tachograph_device
+        - addForeignKeyConstraint:
+            baseTableName: vehicle
+            baseColumnNames: casco_insurance_id
+            constraintName: fk_vehicle_casco_insurance
+            referencedTableName: casco_insurance
+            referencedColumnNames: id_casco_insurance
+        - addForeignKeyConstraint:
+            baseTableName: vehicle
+            baseColumnNames: fire_extinguisher_id
+            constraintName: fk_vehicle_fire_extinguisher
+            referencedTableName: fire_extinguisher
+            referencedColumnNames: id_fire_extinguisher
+        - addForeignKeyConstraint:
+            baseTableName: vehicle
+            baseColumnNames: nis_card_id
+            constraintName: fk_vehicle_nis_card
+            referencedTableName: nis_card
+            referencedColumnNames: id_nis_card
+        - addForeignKeyConstraint:
+            baseTableName: vehicle
+            baseColumnNames: tire_marking_id
+            constraintName: fk_vehicle_tire_marking
+            referencedTableName: tire_marking
+            referencedColumnNames: id_tire_marking
+
+  # 105-111: VEHICLE-CENTRIC RELATIONSHIPS
+  - changeSet:
+      id: 105-fk-vehicle-location
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_vehicle_location_vehicle
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_location
+            baseColumnNames: vehicle_id
+            constraintName: fk_vehicle_location_vehicle
+            referencedTableName: vehicle
+            referencedColumnNames: id_vehicle
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_location
+            baseColumnNames: location_unit_id
+            constraintName: fk_vehicle_location_location_unit
+            referencedTableName: location_unit
+            referencedColumnNames: id_location_unit
+
+  - changeSet:
+      id: 106-fk-vehicle-document-vehicle
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_vehicle_document_vehicle
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_document
+            baseColumnNames: vehicle_id
+            constraintName: fk_vehicle_document_vehicle
+            referencedTableName: vehicle
+            referencedColumnNames: id_vehicle
+
+  - changeSet:
+      id: 107-fk-registration-change-log-vehicle
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_reg_change_log_vehicle
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: registration_change_log
+            baseColumnNames: vehicle_id
+            constraintName: fk_reg_change_log_vehicle
+            referencedTableName: vehicle
+            referencedColumnNames: id_vehicle
+
+  - changeSet:
+      id: 108-fk-vehicle-fault
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_vehicle_fault_vehicle
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_fault
+            baseColumnNames: vehicle_id
+            constraintName: fk_vehicle_fault_vehicle
+            referencedTableName: vehicle
+            referencedColumnNames: id_vehicle
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_fault
+            baseColumnNames: reported_by_driver_id
+            constraintName: fk_vehicle_fault_reporter
+            referencedTableName: driver
+            referencedColumnNames: id_driver
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_fault
+            baseColumnNames: handover_driver_id
+            constraintName: fk_vehicle_fault_handover_driver
+            referencedTableName: driver
+            referencedColumnNames: id_driver
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_fault
+            baseColumnNames: location_id
+            constraintName: fk_vehicle_fault_location
+            referencedTableName: location_unit
+            referencedColumnNames: id_location_unit
+
+  - changeSet:
+      id: 109-fk-traffic-accident
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_traffic_accident_vehicle
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: traffic_accident
+            baseColumnNames: vehicle_id
+            constraintName: fk_traffic_accident_vehicle
+            referencedTableName: vehicle
+            referencedColumnNames: id_vehicle
+        - addForeignKeyConstraint:
+            baseTableName: traffic_accident
+            baseColumnNames: driver_id
+            constraintName: fk_traffic_accident_driver
+            referencedTableName: driver
+            referencedColumnNames: id_driver
+        - addForeignKeyConstraint:
+            baseTableName: traffic_accident
+            baseColumnNames: statement_given_by_driver_id
+            constraintName: fk_traffic_accident_statement_driver
+            referencedTableName: driver
+            referencedColumnNames: id_driver
+        - addForeignKeyConstraint:
+            baseTableName: traffic_accident
+            baseColumnNames: location_id
+            constraintName: fk_traffic_accident_location
+            referencedTableName: location_unit
+            referencedColumnNames: id_location_unit
+
+  - changeSet:
+      id: 110-fk-vehicle-assigned-driver
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_vehicle_assigned_driver_vehicle
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_assigned_driver
+            baseColumnNames: vehicle_id
+            constraintName: fk_vehicle_assigned_driver_vehicle
+            referencedTableName: vehicle
+            referencedColumnNames: id_vehicle
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_assigned_driver
+            baseColumnNames: driver_id
+            constraintName: fk_vehicle_assigned_driver_driver
+            referencedTableName: driver
+            referencedColumnNames: id_driver
+
+  - changeSet:
+      id: 111-fk-vehicle-assigned-driver-log
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_vad_log_vehicle
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_assigned_driver_log
+            baseColumnNames: vehicle_id
+            constraintName: fk_vad_log_vehicle
+            referencedTableName: vehicle
+            referencedColumnNames: id_vehicle
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_assigned_driver_log
+            baseColumnNames: previous_driver_id
+            constraintName: fk_vad_log_previous_driver
+            referencedTableName: driver
+            referencedColumnNames: id_driver
+        - addForeignKeyConstraint:
+            baseTableName: vehicle_assigned_driver_log
+            baseColumnNames: new_driver_id
+            constraintName: fk_vad_log_new_driver
+            referencedTableName: driver
+            referencedColumnNames: id_driver
+
+  # 112-116: DRIVER-CENTRIC RELATIONSHIPS
+  - changeSet:
+      id: 112-fk-drivers-license-tachograph-card
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_drivers_license_tachograph_card
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: drivers_license
+            baseColumnNames: tachograph_card_id
+            constraintName: fk_drivers_license_tachograph_card
+            referencedTableName: tachograph_card
+            referencedColumnNames: id_tachograph_card
+
+  - changeSet:
+      id: 113-fk-license-revocation-driver
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_license_revocation_driver
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: license_revocation
+            baseColumnNames: driver_id
+            constraintName: fk_license_revocation_driver
+            referencedTableName: driver
+            referencedColumnNames: id_driver
+
+  - changeSet:
+      id: 114-fk-driver-documents
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_driver_medical_certificate
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: driver
+            baseColumnNames: medical_certificate_id
+            constraintName: fk_driver_medical_certificate
+            referencedTableName: medical_certificate
+            referencedColumnNames: id_medical_certificate
+        - addForeignKeyConstraint:
+            baseTableName: driver
+            baseColumnNames: driver_permit_id
+            constraintName: fk_driver_permit
+            referencedTableName: driver_permit
+            referencedColumnNames: id_driver_permit
+
+  - changeSet:
+      id: 115-fk-driver-location
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_driver_location_driver
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: driver_location
+            baseColumnNames: driver_id
+            constraintName: fk_driver_location_driver
+            referencedTableName: driver
+            referencedColumnNames: id_driver
+        - addForeignKeyConstraint:
+            baseTableName: driver_location
+            baseColumnNames: location_unit_id
+            constraintName: fk_driver_location_location_unit
+            referencedTableName: location_unit
+            referencedColumnNames: id_location_unit
+
+  - changeSet:
+      id: 116-fk-driver-license-assignment
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          foreignKeyConstraintExists:
+            foreignKeyName: fk_dla_driver
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: driver_license_assignment
+            baseColumnNames: driver_id
+            constraintName: fk_dla_driver
+            referencedTableName: driver
+            referencedColumnNames: id_driver
+        - addForeignKeyConstraint:
+            baseTableName: driver_license_assignment
+            baseColumnNames: drivers_license_id
+            constraintName: fk_dla_drivers_license
+            referencedTableName: drivers_license
+            referencedColumnNames: id_drivers_license

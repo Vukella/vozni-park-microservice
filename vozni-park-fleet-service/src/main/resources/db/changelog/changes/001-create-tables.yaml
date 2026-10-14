@@ -1,0 +1,1253 @@
+databaseChangeLog:
+  # 001-008: REFERENCE / LOOKUP TABLES + LOCATION
+  - changeSet:
+      id: 001-create-brand
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: brand
+      changes:
+        - createTable:
+            tableName: brand
+            columns:
+              - column:
+                  name: id_brand
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 002-create-vehicle-model
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: vehicle_model
+      changes:
+        - createTable:
+            tableName: vehicle_model
+            columns:
+              - column:
+                  name: id_vehicle_model
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: brand_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 003-create-fuel-type
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: fuel_type
+      changes:
+        - createTable:
+            tableName: fuel_type
+            columns:
+              - column:
+                  name: id_fuel_type
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(30)
+
+  - changeSet:
+      id: 004-create-vehicle-type
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: vehicle_type
+      changes:
+        - createTable:
+            tableName: vehicle_type
+            columns:
+              - column:
+                  name: id_vehicle_type
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 005-create-vehicle-subtype
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: vehicle_subtype
+      changes:
+        - createTable:
+            tableName: vehicle_subtype
+            columns:
+              - column:
+                  name: id_vehicle_subtype
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: vehicle_type_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 006-create-tire-marking
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: tire_marking
+      changes:
+        - createTable:
+            tableName: tire_marking
+            columns:
+              - column:
+                  name: id_tire_marking
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(100)
+              - column:
+                  name: marking
+                  type: VARCHAR(100)
+
+  - changeSet:
+      id: 007-create-nis-card
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: nis_card
+      changes:
+        - createTable:
+            tableName: nis_card
+            columns:
+              - column:
+                  name: id_nis_card
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: card_number
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 008-create-location-unit
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: location_unit
+      changes:
+        - createTable:
+            tableName: location_unit
+            columns:
+              - column:
+                  name: id_location_unit
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: location_address
+                  type: VARCHAR(500)
+              - column:
+                  name: location_name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: parent_id
+                  type: BIGINT
+                  remarks: "Self-referential FK for location hierarchy. NULL = top-level location."
+
+  # 009-015: VEHICLE DOCUMENT & SUPPORTING TABLES
+  - changeSet:
+      id: 009-create-registration
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: registration
+      changes:
+        - createTable:
+            tableName: registration
+            columns:
+              - column:
+                  name: id_registration
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: registration_number
+                  type: VARCHAR(20)
+                  remarks: "License plate number"
+              - column:
+                  name: date_from
+                  type: DATE
+              - column:
+                  name: date_to
+                  type: DATE
+              - column:
+                  name: policy_number
+                  type: INT
+                  remarks: "Insurance policy number"
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+              - column:
+                  name: status_code
+                  type: INT
+
+  - changeSet:
+      id: 010-create-first-aid-kit
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: first_aid_kit
+      changes:
+        - createTable:
+            tableName: first_aid_kit
+            columns:
+              - column:
+                  name: id_first_aid_kit
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: expiry_date
+                  type: DATE
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+              - column:
+                  name: status_code
+                  type: INT
+
+  - changeSet:
+      id: 011-create-casco-insurance
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: casco_insurance
+      changes:
+        - createTable:
+            tableName: casco_insurance
+            columns:
+              - column:
+                  name: id_casco_insurance
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: contract_number
+                  type: VARCHAR(30)
+              - column:
+                  name: policy_number
+                  type: VARCHAR(30)
+              - column:
+                  name: date_from
+                  type: DATE
+              - column:
+                  name: date_to
+                  type: DATE
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+              - column:
+                  name: status_code
+                  type: INT
+
+  - changeSet:
+      id: 012-create-tachograph-device
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: tachograph_device
+      changes:
+        - createTable:
+            tableName: tachograph_device
+            columns:
+              - column:
+                  name: id_tachograph_device
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: device_type
+                  type: VARCHAR(30)
+              - column:
+                  name: serial_number
+                  type: VARCHAR(50)
+              - column:
+                  name: date_from
+                  type: DATE
+              - column:
+                  name: date_to
+                  type: DATE
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+              - column:
+                  name: status_code
+                  type: INT
+
+  - changeSet:
+      id: 013-create-fire-extinguisher
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: fire_extinguisher
+      changes:
+        - createTable:
+            tableName: fire_extinguisher
+            columns:
+              - column:
+                  name: id_fire_extinguisher
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: serial_number
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_from
+                  type: DATE
+              - column:
+                  name: date_to
+                  type: DATE
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+              - column:
+                  name: status_code
+                  type: INT
+
+  - changeSet:
+      id: 014-create-vehicle-document
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: vehicle_document
+      changes:
+        - createTable:
+            tableName: vehicle_document
+            columns:
+              - column:
+                  name: id_vehicle_document
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: vehicle_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: document_type
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+                  remarks: "TRAFFIC_LICENSE, CERTIFICATE, EXPERT_FINDING"
+              - column:
+                  name: file_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: content_type
+                  type: VARCHAR(100)
+              - column:
+                  name: file_size
+                  type: BIGINT
+              - column:
+                  name: storage_path
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: upload_date
+                  type: DATE
+                  defaultValueComputed: "(CURRENT_DATE)"
+              - column:
+                  name: uploaded_by_user_id
+                  type: BIGINT
+                  remarks: "Soft reference to identity-service app_user.id_user — no FK across schemas"
+              - column:
+                  name: notes
+                  type: VARCHAR(300)
+
+  - changeSet:
+      id: 015-create-registration-change-log
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: registration_change_log
+      changes:
+        - createTable:
+            tableName: registration_change_log
+            columns:
+              - column:
+                  name: id_registration_change_log
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: vehicle_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: old_registration_number
+                  type: VARCHAR(20)
+              - column:
+                  name: new_registration_number
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: change_reason
+                  type: INT
+                  constraints:
+                    nullable: false
+                  remarks: "1=Re-registration, 2=Error correction, 3=Other"
+              - column:
+                  name: change_note
+                  type: VARCHAR(300)
+                  remarks: "Populated only when change_reason = 3"
+              - column:
+                  name: change_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: changed_by_user_id
+                  type: BIGINT
+                  remarks: "Soft reference to identity-service app_user.id_user"
+
+  # 016-021: VEHICLE + VEHICLE-CENTRIC TABLES
+  - changeSet:
+      id: 016-create-vehicle
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: vehicle
+      changes:
+        - createTable:
+            tableName: vehicle
+            columns:
+              - column:
+                  name: id_vehicle
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: sap_number
+                  type: INT
+                  remarks: "SAP system number — uniqueness enforced at application/service layer"
+              - column:
+                  name: chassis_number
+                  type: VARCHAR(50)
+                  remarks: "VIN - Vehicle Identification Number"
+              - column:
+                  name: engine_number
+                  type: INT
+              - column:
+                  name: tag_serial_number
+                  type: INT
+                  remarks: "RFID/Tracking tag serial number"
+              - column:
+                  name: year_of_manufacture
+                  type: INT
+              - column:
+                  name: engine_displacement
+                  type: DECIMAL(10,2)
+              - column:
+                  name: power
+                  type: INT
+                  remarks: "Engine power in HP/kW"
+              - column:
+                  name: vehicle_status
+                  type: VARCHAR(20)
+              - column:
+                  name: status_code
+                  type: INT
+              - column:
+                  name: registration_id
+                  type: BIGINT
+              - column:
+                  name: fuel_type_id
+                  type: BIGINT
+              - column:
+                  name: first_aid_kit_id
+                  type: BIGINT
+              - column:
+                  name: vehicle_model_id
+                  type: BIGINT
+              - column:
+                  name: vehicle_type_id
+                  type: BIGINT
+              - column:
+                  name: vehicle_subtype_id
+                  type: BIGINT
+              - column:
+                  name: tachograph_device_id
+                  type: BIGINT
+              - column:
+                  name: casco_insurance_id
+                  type: BIGINT
+              - column:
+                  name: fire_extinguisher_id
+                  type: BIGINT
+              - column:
+                  name: nis_card_id
+                  type: BIGINT
+              - column:
+                  name: tire_marking_id
+                  type: BIGINT
+              - column:
+                  name: mass
+                  type: DECIMAL(10,2)
+              - column:
+                  name: color
+                  type: VARCHAR(20)
+              - column:
+                  name: load_capacity
+                  type: INT
+              - column:
+                  name: total_mass
+                  type: INT
+              - column:
+                  name: number_of_seats
+                  type: INT
+              - column:
+                  name: first_registration_date
+                  type: DATE
+              - column:
+                  name: operational_leasing
+                  type: TINYINT
+                  defaultValueNumeric: 0
+                  remarks: "1=vehicle is on operational leasing"
+              - column:
+                  name: decommissioned
+                  type: TINYINT
+                  defaultValueNumeric: 0
+                  remarks: "1=vehicle permanently decommissioned, removed from operations"
+              - column:
+                  name: decommission_date
+                  type: DATE
+              - column:
+                  name: note
+                  type: VARCHAR(300)
+
+  - changeSet:
+      id: 017-create-vehicle-location
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: vehicle_location
+      changes:
+        - createTable:
+            tableName: vehicle_location
+            columns:
+              - column:
+                  name: id_vehicle_location
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: vehicle_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: location_unit_id
+                  type: BIGINT
+                  remarks: "Current physical location"
+
+  - changeSet:
+      id: 018-create-vehicle-fault
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: vehicle_fault
+      changes:
+        - createTable:
+            tableName: vehicle_fault
+            columns:
+              - column:
+                  name: id_vehicle_fault
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: vehicle_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: report_date
+                  type: DATE
+              - column:
+                  name: location_id
+                  type: BIGINT
+              - column:
+                  name: reported_by_driver_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: mileage_at_fault
+                  type: INT
+              - column:
+                  name: fault_description
+                  type: VARCHAR(1000)
+              - column:
+                  name: tow_required
+                  type: TINYINT
+                  defaultValueNumeric: 0
+                  remarks: "0=no, 1=yes"
+              - column:
+                  name: handover_driver_id
+                  type: BIGINT
+              - column:
+                  name: vehicle_inoperable
+                  type: TINYINT
+                  constraints:
+                    nullable: false
+                  defaultValueNumeric: 0
+                  remarks: "1=changes vehicle status to IN_FAULT"
+              - column:
+                  name: service_type
+                  type: VARCHAR(10)
+                  remarks: "MINOR or MAJOR for scheduled services, NULL for ordinary faults"
+              - column:
+                  name: resolution_date
+                  type: DATE
+              - column:
+                  name: handover_date
+                  type: DATE
+              - column:
+                  name: created_by_user_id
+                  type: BIGINT
+                  remarks: "Soft reference to identity-service app_user.id_user"
+              - column:
+                  name: signature
+                  type: TEXT
+                  remarks: "Base64-encoded PNG signature image"
+
+  - changeSet:
+      id: 019-create-traffic-accident
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: traffic_accident
+      changes:
+        - createTable:
+            tableName: traffic_accident
+            columns:
+              - column:
+                  name: id_traffic_accident
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: vehicle_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: accident_date
+                  type: DATE
+              - column:
+                  name: accident_time
+                  type: VARCHAR(10)
+              - column:
+                  name: location_description
+                  type: VARCHAR(200)
+              - column:
+                  name: accident_description
+                  type: VARCHAR(2000)
+              - column:
+                  name: damage_description
+                  type: VARCHAR(1000)
+              - column:
+                  name: reported_to_police
+                  type: TINYINT
+                  defaultValueNumeric: 0
+                  remarks: "0=no, 1=yes"
+              - column:
+                  name: not_reported_reason
+                  type: VARCHAR(500)
+              - column:
+                  name: estimated_damage_value
+                  type: DECIMAL(15,2)
+              - column:
+                  name: driver_id
+                  type: BIGINT
+              - column:
+                  name: driver_license_number_snapshot
+                  type: VARCHAR(30)
+              - column:
+                  name: driver_license_expiry_snapshot
+                  type: DATE
+              - column:
+                  name: statement_given_by_driver_id
+                  type: BIGINT
+              - column:
+                  name: location_id
+                  type: BIGINT
+              - column:
+                  name: travel_order_number_snapshot
+                  type: VARCHAR(30)
+                  remarks: "Snapshot value — travel_order itself lives in travel-order-service"
+              - column:
+                  name: other_participants
+                  type: VARCHAR(1000)
+              - column:
+                  name: declarant_national_id
+                  type: VARCHAR(13)
+              - column:
+                  name: declarant_address
+                  type: VARCHAR(200)
+              - column:
+                  name: declarant_email
+                  type: VARCHAR(100)
+              - column:
+                  name: declarant_position
+                  type: VARCHAR(100)
+              - column:
+                  name: signature
+                  type: TEXT
+                  remarks: "Base64-encoded PNG signature image"
+              - column:
+                  name: created_by_user_id
+                  type: BIGINT
+                  remarks: "Soft reference to identity-service app_user.id_user"
+
+  - changeSet:
+      id: 020-create-vehicle-assigned-driver
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: vehicle_assigned_driver
+      changes:
+        - createTable:
+            tableName: vehicle_assigned_driver
+            columns:
+              - column:
+                  name: id_vehicle_assigned_driver
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: vehicle_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: driver_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: assignment_date
+                  type: DATE
+                  defaultValueComputed: "(CURRENT_DATE)"
+              - column:
+                  name: note
+                  type: VARCHAR(500)
+
+  - changeSet:
+      id: 021-create-vehicle-assigned-driver-log
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: vehicle_assigned_driver_log
+      changes:
+        - createTable:
+            tableName: vehicle_assigned_driver_log
+            columns:
+              - column:
+                  name: id_vehicle_assigned_driver_log
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: vehicle_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: previous_driver_id
+                  type: BIGINT
+              - column:
+                  name: new_driver_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: change_date
+                  type: DATE
+                  defaultValueComputed: "(CURRENT_DATE)"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: changed_by_user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                  remarks: "Soft reference to identity-service app_user.id_user"
+
+  # 022-026: DRIVER DOCUMENT TABLES
+  - changeSet:
+      id: 022-create-drivers-license
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: drivers_license
+      changes:
+        - createTable:
+            tableName: drivers_license
+            columns:
+              - column:
+                  name: id_drivers_license
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: date_from
+                  type: DATE
+              - column:
+                  name: date_to
+                  type: DATE
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+              - column:
+                  name: status_code
+                  type: INT
+              - column:
+                  name: tachograph_card_id
+                  type: BIGINT
+              - column:
+                  name: medical_restrictions
+                  type: TINYINT
+                  defaultValueNumeric: 0
+                  remarks: "1=driver has medical restrictions; date_to already set to the minimum of category-calculated and medical restriction date"
+
+  - changeSet:
+      id: 023-create-medical-certificate
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: medical_certificate
+      changes:
+        - createTable:
+            tableName: medical_certificate
+            columns:
+              - column:
+                  name: id_medical_certificate
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: date_from
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_to
+                  type: DATE
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+              - column:
+                  name: status_code
+                  type: INT
+
+  - changeSet:
+      id: 024-create-tachograph-card
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: tachograph_card
+      changes:
+        - createTable:
+            tableName: tachograph_card
+            columns:
+              - column:
+                  name: id_tachograph_card
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: date_from
+                  type: DATE
+              - column:
+                  name: date_to
+                  type: DATE
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+              - column:
+                  name: status_code
+                  type: INT
+
+  - changeSet:
+      id: 025-create-driver-permit
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: driver_permit
+      changes:
+        - createTable:
+            tableName: driver_permit
+            columns:
+              - column:
+                  name: id_driver_permit
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: date_from
+                  type: DATE
+              - column:
+                  name: date_to
+                  type: DATE
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+              - column:
+                  name: status_code
+                  type: INT
+
+  - changeSet:
+      id: 026-create-license-revocation
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: license_revocation
+      changes:
+        - createTable:
+            tableName: license_revocation
+            columns:
+              - column:
+                  name: id_license_revocation
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: driver_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: revocation_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: revocation_reason
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: restoration_date
+                  type: DATE
+                  remarks: "NULL while revocation is still active"
+              - column:
+                  name: revoked_by_user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                  remarks: "Soft reference to identity-service app_user.id_user"
+              - column:
+                  name: restored_by_user_id
+                  type: BIGINT
+                  remarks: "NULL until license is restored — soft reference to identity-service app_user.id_user"
+
+  # 027-029: DRIVER + DRIVER-CENTRIC TABLES
+  - changeSet:
+      id: 027-create-driver
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: driver
+      changes:
+        - createTable:
+            tableName: driver
+            columns:
+              - column:
+                  name: id_driver
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: sap_number
+                  type: INT
+                  constraints:
+                    nullable: false
+                    unique: true
+                  remarks: "SAP employee number"
+              - column:
+                  name: full_name
+                  type: VARCHAR(60)
+                  remarks: "Last name and first name"
+              - column:
+                  name: phone
+                  type: VARCHAR(20)
+              - column:
+                  name: status
+                  type: VARCHAR(30)
+              - column:
+                  name: status_code
+                  type: INT
+              - column:
+                  name: zaposleni_id
+                  type: BIGINT
+                  remarks: "Soft reference to identity-service zaposleni.id_zaposleni — full_name/sap_number are denormalized locally, not enforced as FK"
+              - column:
+                  name: license_revoked
+                  type: TINYINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+                  remarks: "Fast flag: 1=license actively revoked. Source of truth is license_revocation table."
+              - column:
+                  name: medical_certificate_id
+                  type: BIGINT
+              - column:
+                  name: driver_permit_id
+                  type: BIGINT
+
+  - changeSet:
+      id: 028-create-driver-location
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: driver_location
+      changes:
+        - createTable:
+            tableName: driver_location
+            columns:
+              - column:
+                  name: id_driver_location
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: driver_id
+                  type: BIGINT
+                  constraints:
+                    unique: true
+                  remarks: "Driver reference"
+              - column:
+                  name: location_unit_id
+                  type: BIGINT
+                  remarks: "Driver home/assigned location"
+
+  - changeSet:
+      id: 029-create-driver-license-assignment
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: driver_license_assignment
+      changes:
+        - createTable:
+            tableName: driver_license_assignment
+            columns:
+              - column:
+                  name: id_driver_license_assignment
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: driver_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: drivers_license_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: license_category
+                  type: VARCHAR(20)
+                  remarks: "License category (A, B, C, D, E, etc.)"
+
+  # 030: SYSTEM / DISTRIBUTED LOCK TABLE
+  - changeSet:
+      id: 030-create-system-refresh
+      author: nemanja
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: system_refresh
+      changes:
+        - createTable:
+            tableName: system_refresh
+            columns:
+              - column:
+                  name: key_name
+                  type: VARCHAR(50)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: last_run_ts
+                  type: DATETIME
+              - column:
+                  name: last_run_status
+                  type: VARCHAR(10)
+                  remarks: "OK or ERROR"
+              - column:
+                  name: last_run_message
+                  type: VARCHAR(500)
+              - column:
+                  name: last_run_by
+                  type: VARCHAR(100)

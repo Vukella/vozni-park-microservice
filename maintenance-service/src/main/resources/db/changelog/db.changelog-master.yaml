@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changes/001-create-service-record.yaml
+  - include:
+      file: db/changelog/changes/002-create-vehicle-mileage-tracker.yaml
+  - include:
+      file: db/changelog/changes/003-add-processed-travel-order-event.yaml
