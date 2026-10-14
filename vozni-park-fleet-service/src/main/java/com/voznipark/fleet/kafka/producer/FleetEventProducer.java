@@ -80,23 +80,23 @@ public class FleetEventProducer {
     // Saga events
 
     public void publishVehicleReserved(VehicleReservedEvent event) {
-        send("fleet.vehicle.reserved", String.valueOf(event.getTravelOrderId()), event);
+        send(FleetTopics.VEHICLE_RESERVED, String.valueOf(event.getTravelOrderId()), event);
     }
 
     public void publishVehicleReservationFailed(VehicleReservationFailedEvent event) {
-        send("fleet.vehicle.reservation-failed", String.valueOf(event.getTravelOrderId()), event);
+        send(FleetTopics.VEHICLE_RESERVATION_FAILED, String.valueOf(event.getTravelOrderId()), event);
     }
 
     public void publishDriversReserved(DriversReservedEvent event) {
-        send("fleet.drivers.reserved", String.valueOf(event.getTravelOrderId()), event);
+        send(FleetTopics.DRIVERS_RESERVED, String.valueOf(event.getTravelOrderId()), event);
     }
 
     public void publishDriverReservationFailed(DriverReservationFailedEvent event) {
-        send("fleet.driver.reservation-failed", String.valueOf(event.getTravelOrderId()), event);
+        send(FleetTopics.DRIVER_RESERVATION_FAILED, String.valueOf(event.getTravelOrderId()), event);
     }
 
     public void publishVehicleReleased(VehicleReleasedEvent event) {
-        send("fleet.vehicle.released", String.valueOf(event.getTravelOrderId()), event);
+        send(FleetTopics.VEHICLE_RELEASED, String.valueOf(event.getTravelOrderId()), event);
     }
 
     // Internal

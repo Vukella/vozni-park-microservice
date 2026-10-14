@@ -46,5 +46,13 @@ public final class FleetTopics {
      */
     public static final String DOCUMENT_EXPIRING               = "fleet.document-expiring";
 
+    // Saga topics
+
+    public static final String VEHICLE_RESERVED           = "fleet.vehicle.reserved";
+    public static final String VEHICLE_RESERVATION_FAILED = "fleet.vehicle.reservation-failed";
+    public static final String DRIVERS_RESERVED           = "fleet.drivers.reserved";
+    public static final String DRIVER_RESERVATION_FAILED  = "fleet.driver.reservation-failed";
+    public static final String VEHICLE_RELEASED           = "fleet.vehicle.released";
+
     private FleetTopics() { /* constants only — no instances */ }
 }

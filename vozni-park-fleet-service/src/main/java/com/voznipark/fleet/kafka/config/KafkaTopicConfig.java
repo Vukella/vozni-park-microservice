@@ -93,4 +93,37 @@ public class KafkaTopicConfig {
         return TopicBuilder.name(FleetTopics.DOCUMENT_EXPIRING)
                 .partitions(1).replicas(1).build();
     }
+
+
+    // Saga topics
+
+    @Bean
+    public NewTopic vehicleReservedTopic() {
+        return TopicBuilder.name(FleetTopics.VEHICLE_RESERVED)
+                .partitions(1).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic vehicleReservationFailedTopic() {
+        return TopicBuilder.name(FleetTopics.VEHICLE_RESERVATION_FAILED)
+                .partitions(1).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic driversReservedTopic() {
+        return TopicBuilder.name(FleetTopics.DRIVERS_RESERVED)
+                .partitions(1).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic driverReservationFailedTopic() {
+        return TopicBuilder.name(FleetTopics.DRIVER_RESERVATION_FAILED)
+                .partitions(1).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic vehicleReleasedTopic() {
+        return TopicBuilder.name(FleetTopics.VEHICLE_RELEASED)
+                .partitions(1).replicas(1).build();
+    }
 }
