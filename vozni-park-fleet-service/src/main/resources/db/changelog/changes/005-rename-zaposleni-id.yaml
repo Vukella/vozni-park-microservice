@@ -1,0 +1,12 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: "fleet-t6-001"
+      author: nemanja
+      comment: "T6 — rename column zaposleni_id to employee_id in driver table"
+      changes:
+        - sql:
+            sql: "ALTER TABLE driver RENAME COLUMN zaposleni_id TO employee_id;"
+      rollback:
+        - sql:
+            sql: "ALTER TABLE driver RENAME COLUMN employee_id TO zaposleni_id;"

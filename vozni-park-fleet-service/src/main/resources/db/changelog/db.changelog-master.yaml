@@ -11,3 +11,6 @@ databaseChangeLog:
   - include:
       file: changes/004-seed-data.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/005-rename-zaposleni-id.yaml
+      relativeToChangelogFile: true

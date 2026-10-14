@@ -7,7 +7,7 @@ public record DriverResponseDTO(
         String phone,
         String status,
         Integer statusCode,
-        Long zaposleniId,
+        Long employeeId,
         Boolean licenseRevoked,
         Long medicalCertificateId,
         Long driverPermitId

@@ -16,7 +16,7 @@ public record DriverRequestDTO(
         @Size(max = 20, message = "Phone must not exceed 20 characters")
         String phone,
 
-        Long zaposleniId,
+        Long employeeId,
 
         @NotNull(message = "License revoked flag is required")
         Boolean licenseRevoked,

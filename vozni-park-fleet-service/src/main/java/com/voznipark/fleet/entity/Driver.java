@@ -34,9 +34,8 @@ public class Driver {
     @Column(name = "status_code")
     private Integer statusCode;
 
-    // soft reference to monolith employee — not a real FK
-    @Column(name = "zaposleni_id")
-    private Long zaposleniId;
+    @Column(name = "employee_id")
+    private Long employeeId;
 
     // 1 = revoked; full history is in license_revocation table
     @JdbcTypeCode(SqlTypes.TINYINT)

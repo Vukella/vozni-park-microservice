@@ -16,7 +16,7 @@ public class DriverMapper {
                 .sapNumber(dto.sapNumber())
                 .fullName(dto.fullName())
                 .phone(dto.phone())
-                .zaposleniId(dto.zaposleniId())
+                .employeeId(dto.employeeId())
                 .licenseRevoked(dto.licenseRevoked())
                 .build();
     }
@@ -25,7 +25,7 @@ public class DriverMapper {
         driver.setSapNumber(dto.sapNumber());
         driver.setFullName(dto.fullName());
         driver.setPhone(dto.phone());
-        driver.setZaposleniId(dto.zaposleniId());
+        driver.setEmployeeId(dto.employeeId());
         driver.setLicenseRevoked(dto.licenseRevoked());
     }
 
@@ -37,7 +37,7 @@ public class DriverMapper {
                 d.getPhone(),
                 d.getStatus(),
                 d.getStatusCode(),
-                d.getZaposleniId(),
+                d.getEmployeeId(),
                 d.getLicenseRevoked(),
                 d.getMedicalCertificate() != null
                         ? d.getMedicalCertificate().getIdMedicalCertificate() : null,
