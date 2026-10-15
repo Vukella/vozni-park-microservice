@@ -14,9 +14,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DriversReservedEvent {
-    private Long       travelOrderId;  // ⚠️ INFERRED
-    private Long       vehicleId;      // ⚠️ INFERRED
-    private List<Long> driverIds;      // ⚠️ INFERRED
-    private Long       locationId;     // ⚠️ INFERRED
-    private Instant    occurredAt;     // ⚠️ INFERRED
+    private Long       travelOrderId;
+    private Long       vehicleId;
+    private List<Long> driverIds;
+    private Long       locationId;
+    private Instant    occurredAt;
 }

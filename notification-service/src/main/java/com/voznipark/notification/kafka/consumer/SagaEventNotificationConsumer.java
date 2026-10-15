@@ -36,7 +36,7 @@ public class SagaEventNotificationConsumer {
                     event.getTravelOrderId(),
                     event.getVehicleId(),
                     event.getDriverIds(),
-                    event.getResolvedAt()
+                    event.getOccurredAt()
             );
 
             emailService.sendAdminNotification(subject, body);
@@ -65,7 +65,7 @@ public class SagaEventNotificationConsumer {
                     event.getTravelOrderId(),
                     event.getVehicleId(),
                     event.getReason(),
-                    event.getResolvedAt()
+                    event.getOccurredAt()
             );
 
             emailService.sendAdminNotification(subject, body);
@@ -96,7 +96,7 @@ public class SagaEventNotificationConsumer {
                     event.getVehicleId(),
                     event.getRequestedDriverIds(),  // confirmed field name
                     event.getReason(),
-                    event.getResolvedAt()
+                    event.getOccurredAt()
             );
 
             emailService.sendAdminNotification(subject, body);
