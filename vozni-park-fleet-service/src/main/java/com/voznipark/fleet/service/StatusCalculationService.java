@@ -14,6 +14,7 @@ import com.voznipark.fleet.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.voznipark.fleet.repository.ResourceReservationRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -30,6 +31,7 @@ public class StatusCalculationService {
     private final DriverRepository driverRepository;
     private final VehicleFaultRepository vehicleFaultRepository;
     private final DriverLicenseAssignmentRepository driverLicenseAssignmentRepository;
+    private final ResourceReservationRepository resourceReservationRepository;
 
     // Vehicle status
 
@@ -40,6 +42,10 @@ public class StatusCalculationService {
         }
         if (hasExpiredDocument(vehicle)) {
             return VehicleStatus.INVALID;
+        }
+        if (resourceReservationRepository.existsByResourceTypeAndResourceIdAndReleasedAtIsNull(
+                "VEHICLE", vehicle.getIdVehicle())) {
+            return VehicleStatus.ON_DUTY;
         }
         return VehicleStatus.AVAILABLE;
     }
@@ -69,6 +75,10 @@ public class StatusCalculationService {
         }
         if (hasExpiredDocument(driver)) {
             return DriverStatus.INVALID_DOCUMENTS;
+        }
+        if (resourceReservationRepository.existsByResourceTypeAndResourceIdAndReleasedAtIsNull(
+                "DRIVER", driver.getIdDriver())) {
+            return DriverStatus.ON_DUTY;
         }
         return DriverStatus.AVAILABLE;
     }

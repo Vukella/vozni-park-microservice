@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.voznipark.fleet.entity.ResourceReservation;
+import com.voznipark.fleet.repository.ResourceReservationRepository;
+import java.time.Instant;
 
 import java.util.List;
 import java.util.Set;
@@ -30,6 +33,7 @@ public class DriverService {
     private final StatusCalculationService statusCalculationService;
     private final MedicalCertificateRepository medicalCertificateRepository;
     private final DriverPermitRepository driverPermitRepository;
+    private final ResourceReservationRepository reservationRepository;
 
     // Queries
 
@@ -131,20 +135,32 @@ public class DriverService {
             throw new DriverNotAvailableException("Travel order " + travelOrderId + " has no drivers specified");
         }
 
-        List<Driver> drivers = driverRepository.findAllById(driverIds);
+        // Skip drivers this order already holds (idempotency)
+        List<Long> newDriverIds = driverIds.stream()
+                .filter(id -> !reservationRepository
+                        .existsByTravelOrderIdAndResourceTypeAndResourceIdAndReleasedAtIsNull(
+                                travelOrderId, "DRIVER", id))
+                .collect(Collectors.toList());
+
+        if (newDriverIds.isEmpty()) {
+            log.info("Saga: All drivers already reserved for travel order {} — idempotent return", travelOrderId);
+            return;
+        }
+
+        List<Driver> drivers = driverRepository.findAllById(newDriverIds);
 
         // Verify all requested driver IDs were found
-        if (drivers.size() != driverIds.size()) {
+        if (drivers.size() != newDriverIds.size()) {
             Set<Long> foundIds = drivers.stream()
                     .map(Driver::getIdDriver)
                     .collect(Collectors.toSet());
-            List<Long> missingIds = driverIds.stream()
+            List<Long> missingIds = newDriverIds.stream()
                     .filter(id -> !foundIds.contains(id))
                     .collect(Collectors.toList());
             throw new DriverNotAvailableException("Drivers not found: " + missingIds);
         }
 
-        // Verify ALL drivers are AVAILABLE — fail fast if any are not
+        // All-or-nothing availability check — fail fast if any are not AVAILABLE
         List<Driver> unavailable = drivers.stream()
                 .filter(d -> !"AVAILABLE".equals(d.getStatus()))
                 .collect(Collectors.toList());
@@ -156,9 +172,17 @@ public class DriverService {
             throw new DriverNotAvailableException("Drivers not AVAILABLE: " + details);
         }
 
-        // ON_DUTY = DriverStatus enum value persisted via .name() by StatusCalculationService
-        drivers.forEach(d -> d.setStatus("ON_DUTY"));
-        driverRepository.saveAll(drivers);
+        // Insert a reservation and recalculate status for each new driver — one transaction
+        Instant now = Instant.now();
+        drivers.forEach(d -> {
+            reservationRepository.save(ResourceReservation.builder()
+                    .travelOrderId(travelOrderId)
+                    .resourceType("DRIVER")
+                    .resourceId(d.getIdDriver())
+                    .reservedAt(now)
+                    .build());
+            statusCalculationService.recalculateAndSaveDriverStatus(d.getIdDriver());
+        });
 
         log.info("Saga: Drivers {} reserved for travel order {}", driverIds, travelOrderId);
     }
