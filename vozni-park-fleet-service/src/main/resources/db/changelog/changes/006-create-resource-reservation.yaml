@@ -1,0 +1,33 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: "fleet-006-001"
+      author: nemanja
+      comment: "T7 — create resource_reservation table"
+      changes:
+        - sql:
+            splitStatements: true
+            endDelimiter: ";"
+            sql: |
+              CREATE TABLE resource_reservation (
+                id_resource_reservation BIGINT       NOT NULL AUTO_INCREMENT,
+                travel_order_id         BIGINT       NOT NULL,
+                resource_type           VARCHAR(10)  NOT NULL,
+                resource_id             BIGINT       NOT NULL,
+                reserved_at             DATETIME     NOT NULL,
+                released_at             DATETIME     NULL,
+                release_reason          VARCHAR(20)  NULL,
+                CONSTRAINT pk_resource_reservation
+                  PRIMARY KEY (id_resource_reservation),
+                CONSTRAINT uq_resource_reservation_order_resource
+                  UNIQUE (travel_order_id, resource_type, resource_id)
+              );
+              CREATE INDEX idx_resource_reservation_active
+                ON resource_reservation (resource_type, resource_id, released_at);
+      rollback:
+        - sql:
+            splitStatements: true
+            endDelimiter: ";"
+            sql: |
+              DROP INDEX idx_resource_reservation_active ON resource_reservation;
+              DROP TABLE resource_reservation;

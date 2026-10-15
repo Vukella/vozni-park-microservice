@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.voznipark.fleet.entity.ResourceReservation;
+import com.voznipark.fleet.repository.ResourceReservationRepository;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -44,6 +46,7 @@ public class VehicleService {
     private final VehicleMapper vehicleMapper;
     private final StatusCalculationService statusCalculationService;
     private final FleetEventProducer fleetEventProducer;
+    private final ResourceReservationRepository reservationRepository;
 
     public List<VehicleResponseDTO> getAllVehicles() {
         return vehicleRepository.findAllWithRelations().stream()
@@ -182,6 +185,14 @@ public class VehicleService {
         Vehicle vehicle = vehicleRepository.findById(vehicleId)
                 .orElseThrow(() -> new EntityNotFoundException("Vehicle", vehicleId));
 
+        // Idempotency: already reserved by this order — return SAP without failing
+        if (reservationRepository.existsByTravelOrderIdAndResourceTypeAndResourceIdAndReleasedAtIsNull(
+                travelOrderId, "VEHICLE", vehicleId)) {
+            log.info("Saga: Vehicle {} already reserved for travel order {} — idempotent return",
+                    vehicleId, travelOrderId);
+            return vehicle.getSapNumber();
+        }
+
         if (Boolean.TRUE.equals(vehicle.getDecommissioned())) {
             throw new VehicleNotAvailableException(
                     "Vehicle " + vehicleId + " is decommissioned and cannot be reserved");
@@ -192,8 +203,14 @@ public class VehicleService {
                     "Vehicle " + vehicleId + " is not AVAILABLE. Current status: " + vehicle.getVehicleStatus());
         }
 
-        vehicle.setVehicleStatus("ON_DUTY");
-        vehicleRepository.save(vehicle);
+        reservationRepository.save(ResourceReservation.builder()
+                .travelOrderId(travelOrderId)
+                .resourceType("VEHICLE")
+                .resourceId(vehicleId)
+                .reservedAt(Instant.now())
+                .build());
+
+        statusCalculationService.recalculateAndSaveVehicleStatus(vehicleId);
 
         log.info("Saga: Vehicle {} reserved for travel order {}", vehicleId, travelOrderId);
         return vehicle.getSapNumber();
@@ -204,6 +221,14 @@ public class VehicleService {
     public void releaseVehicle(Long vehicleId, Long travelOrderId) {
         vehicleRepository.findById(vehicleId)
                 .orElseThrow(() -> new EntityNotFoundException("Vehicle", vehicleId));
+
+        reservationRepository
+                .findByTravelOrderIdAndResourceTypeAndReleasedAtIsNull(travelOrderId, "VEHICLE")
+                .forEach(r -> {
+                    r.setReleasedAt(Instant.now());
+                    r.setReleaseReason("COMPENSATION");
+                    reservationRepository.save(r);
+                });
 
         statusCalculationService.recalculateAndSaveVehicleStatus(vehicleId);
 
