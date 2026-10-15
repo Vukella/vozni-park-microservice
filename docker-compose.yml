@@ -163,6 +163,7 @@ services:
   # fleet-service (port 8083)
   # ─────────────────────────────────────────
   fleet-service:
+    init: true
     build:
       context: ./vozni-park-fleet-service
       dockerfile: Dockerfile
@@ -191,6 +192,7 @@ services:
   # travel-order-service (port 8084)
   # ─────────────────────────────────────────
   travel-order-service:
+    init: true
     build:
       context: ./travel-order-service
       dockerfile: Dockerfile
@@ -223,6 +225,7 @@ services:
   # notification-service (port 8085)
   # ─────────────────────────────────────────
   notification-service:
+    init: true
     build:
       context: ./notification-service
       dockerfile: Dockerfile
@@ -247,6 +250,7 @@ services:
   # technical-maintenance-service (port 8087)
   # ─────────────────────────────────────────
   technical-maintenance-service:
+    init: true
     build:
       context: ./maintenance-service
       dockerfile: Dockerfile
@@ -277,6 +281,7 @@ services:
   # document-reporting-service (port 8088)
   # ─────────────────────────────────────────
   document-reporting-service:
+    init: true
     build:
       context: ./document-reporting-service
       dockerfile: Dockerfile
@@ -310,6 +315,7 @@ services:
   # fuel-tracking-service (port 8089)
   # ─────────────────────────────────────────
   fuel-tracking-service:
+    init: true
     build:
       context: ./fuel-tracking-service
       dockerfile: Dockerfile
