@@ -12,6 +12,8 @@ import com.voznipark.maintenance.mapper.ServiceRecordMapper;
 import com.voznipark.maintenance.mapper.VehicleMileageTrackerMapper;
 import com.voznipark.maintenance.repository.ServiceRecordRepository;
 import com.voznipark.maintenance.repository.VehicleMileageTrackerRepository;
+import com.voznipark.maintenance.entity.ProcessedTravelOrderEvent;
+import com.voznipark.maintenance.repository.ProcessedTravelOrderEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

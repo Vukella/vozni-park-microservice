@@ -34,6 +34,9 @@ public class VehicleMileageTracker {
     @Column(name = "km_since_last_major_service", nullable = false)
     private Integer kmSinceLastMajorService;
 
+    @Column(name = "last_travel_order_id")
+    private Long lastTravelOrderId;
+
     @Column(name = "last_updated")
     private Instant lastUpdated;
 }
