@@ -10,7 +10,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
-// listens to fleet domain events and sends admin email for each
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -18,8 +17,6 @@ public class SagaEventNotificationConsumer {
 
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
-
-    // Saga: Happy Path
 
     @KafkaListener(topics = "fleet.drivers.reserved")
     public void onDriversReserved(String message) {
@@ -36,19 +33,22 @@ public class SagaEventNotificationConsumer {
                     event.getTravelOrderId(),
                     event.getVehicleId(),
                     event.getDriverIds(),
-                    event.getResolvedAt()
+                    event.getOccurredAt()
             );
 
-            emailService.sendAdminNotification(subject, body);
-            log.info("Notification sent — DriversReserved (Saga confirmed): travelOrderId={}",
-                    event.getTravelOrderId());
+            boolean sent = emailService.sendAdminNotification(subject, body);
+            if (sent) {
+                log.info("Notification sent — DriversReserved (Saga confirmed): travelOrderId={}",
+                        event.getTravelOrderId());
+            } else {
+                log.warn("Notification delivery failed — DriversReserved: travelOrderId={}",
+                        event.getTravelOrderId());
+            }
 
         } catch (Exception e) {
             log.error("Failed to process DriversReservedEvent: {}", e.getMessage(), e);
         }
     }
-
-    // Saga: Failure — Vehicle Not Available
 
     @KafkaListener(topics = "fleet.vehicle.reservation-failed")
     public void onVehicleReservationFailed(String message) {
@@ -65,19 +65,22 @@ public class SagaEventNotificationConsumer {
                     event.getTravelOrderId(),
                     event.getVehicleId(),
                     event.getReason(),
-                    event.getResolvedAt()
+                    event.getOccurredAt()
             );
 
-            emailService.sendAdminNotification(subject, body);
-            log.info("Notification sent — VehicleReservationFailed: travelOrderId={}, vehicleId={}",
-                    event.getTravelOrderId(), event.getVehicleId());
+            boolean sent = emailService.sendAdminNotification(subject, body);
+            if (sent) {
+                log.info("Notification sent — VehicleReservationFailed: travelOrderId={}, vehicleId={}",
+                        event.getTravelOrderId(), event.getVehicleId());
+            } else {
+                log.warn("Notification delivery failed — VehicleReservationFailed: travelOrderId={}, vehicleId={}",
+                        event.getTravelOrderId(), event.getVehicleId());
+            }
 
         } catch (Exception e) {
             log.error("Failed to process VehicleReservationFailedEvent: {}", e.getMessage(), e);
         }
     }
-
-    // Saga: Failure — Driver Not Available (with vehicle compensation)
 
     @KafkaListener(topics = "fleet.driver.reservation-failed")
     public void onDriverReservationFailed(String message) {
@@ -94,14 +97,19 @@ public class SagaEventNotificationConsumer {
                             "Vreme:        %s",
                     event.getTravelOrderId(),
                     event.getVehicleId(),
-                    event.getRequestedDriverIds(),  // confirmed field name
+                    event.getRequestedDriverIds(),
                     event.getReason(),
-                    event.getResolvedAt()
+                    event.getOccurredAt()
             );
 
-            emailService.sendAdminNotification(subject, body);
-            log.info("Notification sent — DriverReservationFailed: travelOrderId={}, vehicleId={}",
-                    event.getTravelOrderId(), event.getVehicleId());
+            boolean sent = emailService.sendAdminNotification(subject, body);
+            if (sent) {
+                log.info("Notification sent — DriverReservationFailed: travelOrderId={}, vehicleId={}",
+                        event.getTravelOrderId(), event.getVehicleId());
+            } else {
+                log.warn("Notification delivery failed — DriverReservationFailed: travelOrderId={}, vehicleId={}",
+                        event.getTravelOrderId(), event.getVehicleId());
+            }
 
         } catch (Exception e) {
             log.error("Failed to process DriverReservationFailedEvent: {}", e.getMessage(), e);

@@ -108,7 +108,7 @@ public class TravelOrderService {
 
         if (startingMileage == null) {
             throw new IllegalStateException(
-                    "Travel order " + id + " has no startingMileage; it may have been created before T1 fix.");
+                    "Travel order " + id + " has no starting mileage recorded.");
         }
         if (endingMileage <= startingMileage) {
             throw new IllegalArgumentException(
@@ -164,20 +164,13 @@ public class TravelOrderService {
      */
     @Transactional
     public void confirmTravelOrder(Long travelOrderId) {
-        TravelOrder travelOrder = travelOrderRepository.findById(travelOrderId)
-                .orElseThrow(() -> new EntityNotFoundException("TravelOrder", travelOrderId));
-
-        if (!"PENDING".equals(travelOrder.getStatus())) {
-            log.warn("confirmTravelOrder skipped — order {} already in status {}",
-                    travelOrderId, travelOrder.getStatus());
-            return;
+        int updated = travelOrderRepository.confirmTravelOrderAtomic(
+                travelOrderId, Instant.now());
+        if (updated == 0) {
+            log.warn("confirmTravelOrder skipped — order {} not in PENDING status", travelOrderId);
+        } else {
+            log.info("Travel order {} → CONFIRMED (Saga complete)", travelOrderId);
         }
-
-        travelOrder.setStatus("CONFIRMED");
-        travelOrder.setSagaStatus("RESOURCES_RESERVED");
-        travelOrderRepository.save(travelOrder);
-
-        log.info("Travel order {} → CONFIRMED (Saga complete)", travelOrderId);
     }
 
     /**
@@ -209,15 +202,12 @@ public class TravelOrderService {
      */
     @Transactional
     public void markVehicleReserved(Long travelOrderId, Integer vehicleSapNumber) {
-        travelOrderRepository.findById(travelOrderId).ifPresent(order -> {
-            if (order.getVehicleSapNumber() == null) {
-                order.setVehicleSapNumber(vehicleSapNumber);
-            }
-            if ("INITIATED".equals(order.getSagaStatus())) {
-                order.setSagaStatus("VEHICLE_RESERVED");
-            }
-            travelOrderRepository.save(order);
-        });
+        int updated = travelOrderRepository.markVehicleReservedAtomic(
+                travelOrderId, vehicleSapNumber, Instant.now());
+        if (updated == 0) {
+            log.warn("markVehicleReserved: no update for travelOrderId={} (already past INITIATED?)",
+                    travelOrderId);
+        }
     }
 
     // Helpers

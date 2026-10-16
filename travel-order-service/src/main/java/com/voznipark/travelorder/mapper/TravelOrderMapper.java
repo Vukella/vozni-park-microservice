@@ -28,12 +28,13 @@ public class TravelOrderMapper {
         List<TravelOrderResponseDTO.DriverAssignmentDTO> driverDTOs = entity.getDrivers() == null
                 ? List.of()
                 : entity.getDrivers().stream()
-                        .map(this::toDriverAssignmentDTO)
-                        .collect(Collectors.toList());
+                .map(this::toDriverAssignmentDTO)
+                .collect(Collectors.toList());
 
         return TravelOrderResponseDTO.builder()
                 .idTravelOrder(entity.getIdTravelOrder())
                 .vehicleId(entity.getVehicleId())
+                .vehicleSapNumber(entity.getVehicleSapNumber())
                 .dateFrom(entity.getDateFrom())
                 .dateTo(entity.getDateTo())
                 .workOrderNumber(entity.getWorkOrderNumber())
