@@ -35,7 +35,10 @@ public class StatusCalculationService {
 
     // Vehicle status
 
-    /** Priority: IN_FAULT > INVALID > AVAILABLE. Caller handles decommissioned check. */
+    /**
+     * Priority: IN_FAULT > INVALID > ON_DUTY > AVAILABLE.
+     * UNAVAILABLE (overdue travel order) is not computed here.
+     */
     public VehicleStatus calculateVehicleStatus(Vehicle vehicle) {
         if (hasActiveFault(vehicle)) {
             return VehicleStatus.IN_FAULT;
@@ -49,7 +52,6 @@ public class StatusCalculationService {
         }
         return VehicleStatus.AVAILABLE;
     }
-
 
     private boolean hasActiveFault(Vehicle vehicle) {
         return vehicleFaultRepository
@@ -68,7 +70,10 @@ public class StatusCalculationService {
 
     // Driver status
 
-    /** Priority: SUSPENDED > INVALID_DOCUMENTS > AVAILABLE. */
+    /**
+     * Priority: SUSPENDED > INVALID_DOCUMENTS > ON_DUTY > AVAILABLE.
+     * UNAVAILABLE (overdue travel order) is not computed here.
+     */
     public DriverStatus calculateDriverStatus(Driver driver) {
         if (Boolean.TRUE.equals(driver.getLicenseRevoked())) {
             return DriverStatus.SUSPENDED;
@@ -119,7 +124,6 @@ public class StatusCalculationService {
     // Persist methods
 
     /** Skips decommissioned vehicles. */
-    // TODO: replace IllegalArgumentException with EntityNotFoundException
     @Transactional
     public void recalculateAndSaveVehicleStatus(Long vehicleId) {
         Vehicle vehicle = vehicleRepository.findById(vehicleId)

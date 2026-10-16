@@ -13,6 +13,7 @@ public class TravelOrderResponseDTO {
 
     private Long idTravelOrder;
     private Long vehicleId;
+    private Integer vehicleSapNumber;
     private LocalDate dateFrom;
     private LocalDate dateTo;
     private String workOrderNumber;

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 /**
  * Sends plain-text emails via JavaMailSender.
  * Failures are caught and logged — never rethrown, to avoid Kafka retries.
+ * Returns true if the email was handed off to the SMTP server, false otherwise.
  */
 @Slf4j
 @Service
@@ -25,12 +26,11 @@ public class EmailService {
     @Value("${notification.email.admin}")
     private String adminAddress;
 
-    public void sendAdminNotification(String subject, String body) {
-        sendEmail(adminAddress, subject, body);
+    public boolean sendAdminNotification(String subject, String body) {
+        return sendEmail(adminAddress, subject, body);
     }
 
-
-    public void sendEmail(String to, String subject, String body) {
+    public boolean sendEmail(String to, String subject, String body) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromAddress);
@@ -39,9 +39,11 @@ public class EmailService {
             message.setText(body);
             mailSender.send(message);
             log.info("Email sent → to={} | subject={}", to, subject);
+            return true;
         } catch (MailException e) {
             log.error("Failed to send email → to={} | subject={} | error={}",
                     to, subject, e.getMessage(), e);
+            return false;
         }
     }
 }
